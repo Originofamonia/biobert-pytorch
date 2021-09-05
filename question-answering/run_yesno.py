@@ -416,7 +416,7 @@ def load_and_cache_examples(args, tokenizer, evaluate=False,
 
 def main():
     parser = argparse.ArgumentParser()
-    data_dir = '/home/qiyuan/2021fall/biobert-pytorch/QA/BioASQ'
+    data_dir = '/home/qiyuan/2021fall/biobert-pytorch/datasets/QA/BioASQ'
 
     # Required parameters
     parser.add_argument(
