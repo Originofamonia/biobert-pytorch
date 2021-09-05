@@ -474,7 +474,7 @@ def main():
         help="SQuAD json for predictions. E.g., dev-v1.1.json or test-v1.1.json"
     )
     parser.add_argument(
-        "--do_lower_case", default=True, type=bool, action="store_true",
+        "--do_lower_case", default=True,
         help="Whether to lower case the input text. Should be True for uncased "
              "models and False for cased models."
     )
@@ -507,17 +507,14 @@ def main():
              "this will be truncated to this length."
     )
     parser.add_argument(
-        "--do_train", default=True, type=bool,
-        action="store_true",
-        help="Whether to run training."
+        "--do_train", default=True, type=bool, help="Whether to run training."
     )
     parser.add_argument(
         "--do_eval", default=True, type=bool,
-        action="store_true",
         help="Whether to run eval on the dev set."
     )
     parser.add_argument(
-        "--overwrite_cache", default=True, type=bool, action="store_true",
+        "--overwrite_cache", default=True, type=bool,
         help="Overwrite the cached training and evaluation sets",
     )
     parser.add_argument(
