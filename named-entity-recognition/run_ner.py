@@ -314,7 +314,7 @@ def main():
 
         output_eval_file = os.path.join(training_args.output_dir,
                                         "eval_results.txt")
-        if trainer.is_world_master():
+        if trainer.is_world_process_zero():
             with open(output_eval_file, "w") as writer:
                 logger.info("***** Eval results *****")
                 for key, value in result.items():
@@ -341,7 +341,7 @@ def main():
         # Save predictions
         output_test_results_file = os.path.join(training_args.output_dir,
                                                 "test_results.txt")
-        if trainer.is_world_master():
+        if trainer.is_world_process_zero():
             with open(output_test_results_file, "w") as writer:
                 logger.info("***** Test results *****")
                 for key, value in metrics.items():
@@ -350,7 +350,7 @@ def main():
 
         output_test_predictions_file = os.path.join(training_args.output_dir,
                                                     "test_predictions.txt")
-        if trainer.is_world_master():
+        if trainer.is_world_process_zero():
             with open(output_test_predictions_file, "w") as writer:
                 with open(os.path.join(data_args.data_dir, "test.txt"),
                           "r") as f:
