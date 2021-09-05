@@ -15,7 +15,6 @@
 # limitations under the License.
 """ Fine-tuning the library models for named entity recognition on CoNLL-2003. """
 
-
 import logging
 import os
 import sys
@@ -50,21 +49,26 @@ class ModelArguments:
     """
     Arguments pertaining to which model/config/tokenizer we are going to fine-tune from.
     """
-
     model_name_or_path: str = field(
-        metadata={"help": "Path to pretrained model or model identifier from huggingface.co/models"}
+        default='dmis-lab/biobert-base-cased-v1.1',
+        metadata={
+            "help": "Path to pretrained model or model identifier from huggingface.co/models"}
     )
     config_name: Optional[str] = field(
-        default=None, metadata={"help": "Pretrained config name or path if not the same as model_name"}
+        default=None, metadata={
+            "help": "Pretrained config name or path if not the same as model_name"}
     )
     tokenizer_name: Optional[str] = field(
-        default=None, metadata={"help": "Pretrained tokenizer name or path if not the same as model_name"}
+        default=None, metadata={
+            "help": "Pretrained tokenizer name or path if not the same as model_name"}
     )
-    use_fast: bool = field(default=False, metadata={"help": "Set this flag to use fast tokenization."})
+    use_fast: bool = field(default=False, metadata={
+        "help": "Set this flag to use fast tokenization."})
     # If you want to tweak more attributes on your tokenizer, you should do it in a distinct script,
     # or just modify its tokenizer_config.json.
     cache_dir: Optional[str] = field(
-        default=None, metadata={"help": "Where do you want to store the pretrained models downloaded from s3"}
+        default=None, metadata={
+            "help": "Where do you want to store the pretrained models downloaded from s3"}
     )
 
 
@@ -73,23 +77,64 @@ class DataTrainingArguments:
     """
     Arguments pertaining to what data we are going to input our model for training and eval.
     """
-
+    _data_dir = '../datasets/NER'
+    entity = 'NCBI-disease'
     data_dir: str = field(
-        metadata={"help": "The input data dir. Should contain the .txt files for a CoNLL-2003-formatted task."}
+        default=f'{_data_dir}/{entity}',
+        metadata={
+            "help": "The input data dir. Should contain the .txt files for a CoNLL-2003-formatted task."}
     )
     labels: Optional[str] = field(
-        default=None,
-        metadata={"help": "Path to a file containing all labels. If not specified, CoNLL-2003 labels are used."},
+        default=f'{_data_dir}/{entity}/labels.txt',
+        metadata={
+            "help": "Path to a file containing all labels. If not specified, CoNLL-2003 labels are used."},
+    )
+    output_dir: str = field(
+        default=f'../output/{entity}',
+        metadata={"help": "Path to outputs"}
+    )
+    overwrite_output_dir: bool = field(
+        default=True,
+        metadata={"help": "Overwrite the output"}
     )
     max_seq_length: int = field(
         default=128,
         metadata={
             "help": "The maximum total input sequence length after tokenization. Sequences longer "
-            "than this will be truncated, sequences shorter will be padded."
+                    "than this will be truncated, sequences shorter will be padded."
         },
     )
+    num_train_epochs: int = field(
+        default=3,
+        metadata={"help": "training epochs"},
+    )
+    per_device_train_batch_size: int = field(
+        default=32,
+        metadata={"help": "per_device_train_batch_size"},
+    )
+    seed: int = field(
+        default=42,
+        metadata={"help": "seed"},
+    )
+    save_steps: int = field(
+        default=1000,
+        metadata={"help": "save_steps"},
+    )
     overwrite_cache: bool = field(
-        default=False, metadata={"help": "Overwrite the cached training and evaluation sets"}
+        default=False,
+        metadata={"help": "Overwrite the cached training and evaluation sets"}
+    )
+    do_train: bool = field(
+        default=True,
+        metadata={"help": "do_train"}
+    )
+    do_eval: bool = field(
+        default=True,
+        metadata={"help": "do_eval"}
+    )
+    do_predict: bool = field(
+        default=True,
+        metadata={"help": "do_predict"}
     )
 
 
@@ -98,19 +143,21 @@ def main():
     # or by passing the --help flag to this script.
     # We now keep distinct sets of args, for a cleaner separation of concerns.
 
-    parser = HfArgumentParser((ModelArguments, DataTrainingArguments, TrainingArguments))
+    parser = HfArgumentParser(
+        (ModelArguments, DataTrainingArguments, TrainingArguments))
     if len(sys.argv) == 2 and sys.argv[1].endswith(".json"):
         # If we pass only one argument to the script and it's the path to a json file,
         # let's parse it to get our arguments.
-        model_args, data_args, training_args = parser.parse_json_file(json_file=os.path.abspath(sys.argv[1]))
+        model_args, data_args, training_args = parser.parse_json_file(
+            json_file=os.path.abspath(sys.argv[1]))
     else:
         model_args, data_args, training_args = parser.parse_args_into_dataclasses()
 
     if (
-        os.path.exists(training_args.output_dir)
-        and os.listdir(training_args.output_dir)
-        and training_args.do_train
-        and not training_args.overwrite_output_dir
+            os.path.exists(training_args.output_dir)
+            and os.listdir(training_args.output_dir)
+            and training_args.do_train
+            and not training_args.overwrite_output_dir
     ):
         raise ValueError(
             f"Output directory ({training_args.output_dir}) already exists and is not empty. Use --overwrite_output_dir to overcome."
@@ -120,7 +167,8 @@ def main():
     logging.basicConfig(
         format="%(asctime)s - %(levelname)s - %(name)s -   %(message)s",
         datefmt="%m/%d/%Y %H:%M:%S",
-        level=logging.INFO if training_args.local_rank in [-1, 0] else logging.WARN,
+        level=logging.INFO if training_args.local_rank in [-1,
+                                                           0] else logging.WARN,
     )
     logger.warning(
         "Process rank: %s, device: %s, n_gpu: %s, distributed training: %s, 16-bits training: %s",
@@ -143,8 +191,8 @@ def main():
     # Load pretrained model and tokenizer
     #
     # Distributed training:
-    # The .from_pretrained methods guarantee that only one local process can concurrently
-    # download model & vocab.
+    # The .from_pretrained methods guarantee that only one local process can
+    # concurrently download model & vocab.
 
     config = AutoConfig.from_pretrained(
         model_args.config_name if model_args.config_name else model_args.model_name_or_path,
@@ -204,14 +252,15 @@ def main():
         else None
     )
 
-    def align_predictions(predictions: np.ndarray, label_ids: np.ndarray) -> Tuple[List[int], List[int]]:
+    def align_predictions(predictions: np.ndarray, label_ids: np.ndarray) -> \
+    Tuple[List[int], List[int]]:
         preds = np.argmax(predictions, axis=2)
 
         batch_size, seq_len = preds.shape
 
         out_label_list = [[] for _ in range(batch_size)]
         preds_list = [[] for _ in range(batch_size)]
-        
+
         for i in range(batch_size):
             for j in range(seq_len):
                 if label_ids[i, j] != nn.CrossEntropyLoss().ignore_index:
@@ -221,8 +270,9 @@ def main():
         return preds_list, out_label_list
 
     def compute_metrics(p: EvalPrediction) -> Dict:
-        preds_list, out_label_list = align_predictions(p.predictions, p.label_ids)
-        
+        preds_list, out_label_list = align_predictions(p.predictions,
+                                                       p.label_ids)
+
         return {
             "precision": precision_score(out_label_list, preds_list),
             "recall": recall_score(out_label_list, preds_list),
@@ -241,7 +291,8 @@ def main():
     # Training
     if training_args.do_train:
         trainer.train(
-            model_path=model_args.model_name_or_path if os.path.isdir(model_args.model_name_or_path) else None
+            model_path=model_args.model_name_or_path if os.path.isdir(
+                model_args.model_name_or_path) else None
         )
         trainer.save_model()
         # For convenience, we also re-save the tokenizer to the same directory,
@@ -255,8 +306,9 @@ def main():
         logger.info("*** Evaluate ***")
 
         result = trainer.evaluate()
-        
-        output_eval_file = os.path.join(training_args.output_dir, "eval_results.txt")
+
+        output_eval_file = os.path.join(training_args.output_dir,
+                                        "eval_results.txt")
         if trainer.is_world_master():
             with open(output_eval_file, "w") as writer:
                 logger.info("***** Eval results *****")
@@ -265,8 +317,7 @@ def main():
                     writer.write("%s = %s\n" % (key, value))
 
             results.update(result)
-    
-    
+
     # Predict
     if training_args.do_predict:
         test_dataset = NerDataset(
@@ -281,9 +332,10 @@ def main():
 
         predictions, label_ids, metrics = trainer.predict(test_dataset)
         preds_list, _ = align_predictions(predictions, label_ids)
-        
+
         # Save predictions
-        output_test_results_file = os.path.join(training_args.output_dir, "test_results.txt")
+        output_test_results_file = os.path.join(training_args.output_dir,
+                                                "test_results.txt")
         if trainer.is_world_master():
             with open(output_test_results_file, "w") as writer:
                 logger.info("***** Test results *****")
@@ -291,30 +343,34 @@ def main():
                     logger.info("  %s = %s", key, value)
                     writer.write("%s = %s\n" % (key, value))
 
-        
-        output_test_predictions_file = os.path.join(training_args.output_dir, "test_predictions.txt")
+        output_test_predictions_file = os.path.join(training_args.output_dir,
+                                                    "test_predictions.txt")
         if trainer.is_world_master():
             with open(output_test_predictions_file, "w") as writer:
-                with open(os.path.join(data_args.data_dir, "test.txt"), "r") as f:
+                with open(os.path.join(data_args.data_dir, "test.txt"),
+                          "r") as f:
                     example_id = 0
                     for line in f:
-                        if line.startswith("-DOCSTART-") or line == "" or line == "\n":
+                        if line.startswith(
+                                "-DOCSTART-") or line == "" or line == "\n":
                             writer.write(line)
                             if not preds_list[example_id]:
                                 example_id += 1
                         elif preds_list[example_id]:
                             entity_label = preds_list[example_id].pop(0)
                             if entity_label == 'O':
-                                output_line = line.split()[0] + " " + entity_label + "\n"
+                                output_line = line.split()[
+                                                  0] + " " + entity_label + "\n"
                             else:
-                                output_line = line.split()[0] + " " + entity_label[0] + "\n"
+                                output_line = line.split()[0] + " " + \
+                                              entity_label[0] + "\n"
                             # output_line = line.split()[0] + " " + preds_list[example_id].pop(0) + "\n"
                             writer.write(output_line)
                         else:
                             logger.warning(
-                                "Maximum sequence length exceeded: No prediction for '%s'.", line.split()[0]
+                                "Maximum sequence length exceeded: No prediction for '%s'.",
+                                line.split()[0]
                             )
-            
 
     return results
 
