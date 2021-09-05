@@ -25,7 +25,8 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
-from seqeval.metrics import f1_score, precision_score, recall_score
+from seqeval.metrics import (f1_score, precision_score, recall_score,
+                             accuracy_score)
 from torch import nn
 
 from transformers import (
@@ -39,7 +40,7 @@ from transformers import (
     TrainingArguments,
     set_seed,
 )
-from utils_ner import NerDataset, Split, get_labels
+from utils_ner import MimicDataset, Split, get_labels
 
 logger = logging.getLogger(__name__)
 
@@ -231,7 +232,7 @@ def main():
 
     # Get datasets
     train_dataset = (
-        NerDataset(
+        MimicDataset(
             data_dir=data_args.data_dir,
             tokenizer=tokenizer,
             labels=labels,
@@ -244,7 +245,7 @@ def main():
         else None
     )
     eval_dataset = (
-        NerDataset(
+        MimicDataset(
             data_dir=data_args.data_dir,
             tokenizer=tokenizer,
             labels=labels,
@@ -282,6 +283,7 @@ def main():
             "precision": precision_score(out_label_list, preds_list),
             "recall": recall_score(out_label_list, preds_list),
             "f1": f1_score(out_label_list, preds_list),
+            'accuracy': accuracy_score(out_label_list, preds_list),
         }
 
     # Initialize our Trainer
@@ -325,7 +327,7 @@ def main():
 
     # Predict
     if training_args.do_predict:
-        test_dataset = NerDataset(
+        test_dataset = MimicDataset(
             data_dir=data_args.data_dir,
             tokenizer=tokenizer,
             labels=labels,
