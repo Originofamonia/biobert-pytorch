@@ -124,18 +124,18 @@ class DataTrainingArguments:
         default=False,
         metadata={"help": "Overwrite the cached training and evaluation sets"}
     )
-    do_train: bool = field(
-        default=True,
-        metadata={"help": "do_train"}
-    )
-    do_eval: bool = field(
-        default=True,
-        metadata={"help": "do_eval"}
-    )
-    do_predict: bool = field(
-        default=True,
-        metadata={"help": "do_predict"}
-    )
+    # do_train: bool = field(
+    #     default=True,
+    #     metadata={"help": "do_train"}
+    # )
+    # do_eval: bool = field(
+    #     default=True,
+    #     metadata={"help": "do_eval"}
+    # )
+    # do_predict: bool = field(
+    #     default=True,
+    #     metadata={"help": "do_predict"}
+    # )
 
 
 def main():
