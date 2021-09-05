@@ -15,7 +15,6 @@
 # limitations under the License.
 """ Returning embedding of input text """
 
-
 import logging
 import os
 import sys
@@ -41,6 +40,7 @@ from utils_embedding import EmbeddingDataset, data_collator
 logger = logging.getLogger(__name__)
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
+
 @dataclass
 class ModelArguments:
     """
@@ -48,20 +48,27 @@ class ModelArguments:
     """
 
     model_name_or_path: str = field(
-        metadata={"help": "Path to pretrained model or model identifier from huggingface.co/models"}
+        default='dmis-lab/biobert-base-cased-v1.1',
+        metadata={
+            "help": "Path to pretrained model or model identifier from huggingface.co/models"}
     )
     config_name: Optional[str] = field(
-        default=None, metadata={"help": "Pretrained config name or path if not the same as model_name"}
+        default=None, metadata={
+            "help": "Pretrained config name or path if not the same as model_name"}
     )
     tokenizer_name: Optional[str] = field(
-        default=None, metadata={"help": "Pretrained tokenizer name or path if not the same as model_name"}
+        default=None, metadata={
+            "help": "Pretrained tokenizer name or path if not the same as model_name"}
     )
-    use_fast: bool = field(default=False, metadata={"help": "Set this flag to use fast tokenization."})
+    use_fast: bool = field(default=False, metadata={
+        "help": "Set this flag to use fast tokenization."})
     # If you want to tweak more attributes on your tokenizer, you should do it in a distinct script,
     # or just modify its tokenizer_config.json.
     cache_dir: Optional[str] = field(
-        default=None, metadata={"help": "Where do you want to store the pretrained models downloaded from s3"}
+        default=None, metadata={
+            "help": "Where do you want to store the pretrained models downloaded from s3"}
     )
+
 
 @dataclass
 class DataArguments:
@@ -70,11 +77,14 @@ class DataArguments:
     """
 
     data_path: str = field(
+        default='pubmed_entity_2048.txt',
         metadata={"help": "The input data path in .txt format."}
     )
     output_path: str = field(
+        default='pubmed_entity_2048.h5',
         metadata={"help": "The file name of embedding output (.h5)"}
     )
+
 
 @dataclass
 class EmbeddingArguments:
@@ -83,27 +93,29 @@ class EmbeddingArguments:
     """
 
     pooling: str = field(
-        default='none',
-        metadata={"help": "Pooling method: none, first, mean, sum (default:none)"}
+        default='mean',
+        metadata={
+            "help": "Pooling method: none, first, mean, sum (default:none)"}
     )
     batch_size: int = field(
-        default=32,
+        default=64,
         metadata={"help": "Batch size to embed in batch"}
     )
     max_seq_length: int = field(
-        default=128,
+        default=384,
         metadata={
             "help": "The maximum total input sequence length after tokenization. Sequences longer "
-            "than this will be truncated, sequences shorter will be padded."
+                    "than this will be truncated, sequences shorter will be padded."
         },
     )
     keep_text_order: bool = field(
         default=False,
         metadata={
             "help": "If this flag is set to True, the hdf5 groups output by the model will be "
-            "named according to their line number in the input file."
+                    "named according to their line number in the input file."
         },
     )
+
 
 class Embedder:
     """
@@ -117,11 +129,11 @@ class Embedder:
     output_path: str
 
     def __init__(
-        self,
-        model: AutoModel,
-        args: EmbeddingArguments,
-        embed_dataset: EmbeddingDataset=None,
-        output_path: str=""
+            self,
+            model: AutoModel,
+            args: EmbeddingArguments,
+            embed_dataset: EmbeddingDataset = None,
+            output_path: str = ""
     ):
         """
         Embedder is a simple but feature-complete training and eval loop for PyTorch,
@@ -163,7 +175,7 @@ class Embedder:
         return self._embedding_loop(embed_dataloader)
 
     def _embedding_loop(
-        self, dataloader: DataLoader
+            self, dataloader: DataLoader
     ) -> Tuple:
         """
         Prediction/evaluation loop, shared by `evaluate()` and `predict()`.
@@ -196,33 +208,39 @@ class Embedder:
             # batch process (fast)
             embeddings = []
             if self.args.pooling == 'first':
-                embeddings = last_hidden_states[:,0,:]
+                embeddings = last_hidden_states[:, 0, :]
             elif self.args.pooling == 'sum' or self.args.pooling == 'mean':
                 # masking [CLS] and [SEP]
                 attention_mask = inputs['attention_mask'].detach()
-                attention_mask = torch.nn.functional.pad(attention_mask[:,2:],(1,1)) # 2 means [CLS] and [SEP]
+                attention_mask = torch.nn.functional.pad(attention_mask[:, 2:],
+                                                         (1,
+                                                          1))  # 2 means [CLS] and [SEP]
 
                 # extract the hidden state where there's no masking
-                attention_mask = attention_mask.unsqueeze(-1).expand(last_hidden_states.shape)
-                sub_embeddings = (attention_mask.to(torch.float)*last_hidden_states)
+                attention_mask = attention_mask.unsqueeze(-1).expand(
+                    last_hidden_states.shape)
+                sub_embeddings = (
+                            attention_mask.to(torch.float) * last_hidden_states)
 
                 # summation
                 embeddings = sub_embeddings.sum(dim=1)
 
                 # mean
                 if self.args.pooling == 'mean':
-                    attention_mask = attention_mask[:,:,0].sum(dim=-1).unsqueeze(1)
-                    embeddings = embeddings/attention_mask.to(torch.float)
+                    attention_mask = attention_mask[:, :, 0].sum(
+                        dim=-1).unsqueeze(1)
+                    embeddings = embeddings / attention_mask.to(torch.float)
 
             elif self.args.pooling == 'none':
-                for embed, attention_mask in zip(last_hidden_states, inputs['attention_mask']):
+                for embed, attention_mask in zip(last_hidden_states,
+                                                 inputs['attention_mask']):
                     token_embed = embed[0:attention_mask.sum()]
                     embeddings.append(token_embed)
 
             # save into hdf5 file
             if self.keep_text_order:
-                for embedding, each_metadata in zip(embeddings,metadata):
-                    text_id=u"{}".format(each_metadata['text_id'])
+                for embedding, each_metadata in zip(embeddings, metadata):
+                    text_id = u"{}".format(each_metadata['text_id'])
                     dg = f.get(text_id) or f.create_group(text_id)
                     if not dg.get('embedding'):
                         dg.create_dataset('embedding', data=embedding.cpu())
@@ -230,8 +248,8 @@ class Embedder:
                         dg.attrs.create('text', each_metadata['text'])
 
             else:
-                for embedding, each_metadata in zip(embeddings,metadata):
-                    text_id=u"{}".format(each_metadata['text'])
+                for embedding, each_metadata in zip(embeddings, metadata):
+                    text_id = u"{}".format(each_metadata['text'])
                     dg = f.get(text_id) or f.create_group(text_id)
                     if not dg.get('embedding'):
                         dg.create_dataset('embedding', data=embedding.cpu())
@@ -239,9 +257,11 @@ class Embedder:
         # close hdf5 file stream
         f.close()
 
+
 def main():
     # We now keep distinct sets of args, for a cleaner separation of concerns.
-    parser = HfArgumentParser((ModelArguments, DataArguments, EmbeddingArguments))
+    parser = HfArgumentParser(
+        (ModelArguments, DataArguments, EmbeddingArguments))
     model_args, data_args, embed_args = parser.parse_args_into_dataclasses()
 
     # Setup logging
@@ -289,6 +309,7 @@ def main():
     # run embed and save it to hdf5
     embedder.embed()
     print("done")
+
 
 def _mp_fn(index):
     # For xla_spawn (TPUs)
