@@ -89,14 +89,6 @@ class DataTrainingArguments:
         metadata={
             "help": "Path to a file containing all labels. If not specified, CoNLL-2003 labels are used."},
     )
-    # output_dir: str = field(
-    #     default=f'../output/{entity}',
-    #     metadata={"help": "Path to outputs"}
-    # )
-    # overwrite_output_dir: bool = field(
-    #     default=True,
-    #     metadata={"help": "Overwrite the output"}
-    # )
     max_seq_length: int = field(
         default=128,
         metadata={
@@ -104,39 +96,52 @@ class DataTrainingArguments:
                     "than this will be truncated, sequences shorter will be padded."
         },
     )
-    # num_train_epochs: int = field(
-    #     default=3,
-    #     metadata={"help": "training epochs"},
-    # )
-    # per_device_train_batch_size: int = field(
-    #     default=32,
-    #     metadata={"help": "per_device_train_batch_size"},
-    # )
-    # seed: int = field(
-    #     default=42,
-    #     metadata={"help": "seed"},
-    # )
-    # save_steps: int = field(
-    #     default=1000,
-    #     metadata={"help": "save_steps"},
-    # )
     overwrite_cache: bool = field(
         default=False,
         metadata={"help": "Overwrite the cached training and evaluation sets"}
     )
-    # do_train: bool = field(
-    #     default=True,
-    #     metadata={"help": "do_train"}
-    # )
-    # do_eval: bool = field(
-    #     default=True,
-    #     metadata={"help": "do_eval"}
-    # )
-    # do_predict: bool = field(
-    #     default=True,
-    #     metadata={"help": "do_predict"}
-    # )
 
+
+@dataclass
+class MyTrainingArguments(TrainingArguments):
+    _data_dir = '../datasets/NER'
+    entity = 'NCBI-disease'
+    output_dir: str = field(
+        default=f'../output/{entity}',
+        metadata={"help": "Path to outputs"}
+    )
+    overwrite_output_dir: bool = field(
+        default=True,
+        metadata={"help": "Overwrite the output"}
+    )
+    num_train_epochs: int = field(
+        default=3,
+        metadata={"help": "training epochs"},
+    )
+    per_device_train_batch_size: int = field(
+        default=32,
+        metadata={"help": "per_device_train_batch_size"},
+    )
+    seed: int = field(
+        default=42,
+        metadata={"help": "seed"},
+    )
+    save_steps: int = field(
+        default=1000,
+        metadata={"help": "save_steps"},
+    )
+    do_train: bool = field(
+        default=True,
+        metadata={"help": "do_train"}
+    )
+    do_eval: bool = field(
+        default=True,
+        metadata={"help": "do_eval"}
+    )
+    do_predict: bool = field(
+        default=True,
+        metadata={"help": "do_predict"}
+    )
 
 def main():
     # See all possible arguments in src/transformers/training_args.py
@@ -144,7 +149,7 @@ def main():
     # We now keep distinct sets of args, for a cleaner separation of concerns.
 
     parser = HfArgumentParser(
-        (ModelArguments, DataTrainingArguments, TrainingArguments))
+        (ModelArguments, DataTrainingArguments, MyTrainingArguments))
     if len(sys.argv) == 2 and sys.argv[1].endswith(".json"):
         # If we pass only one argument to the script and it's the path to a json file,
         # let's parse it to get our arguments.
