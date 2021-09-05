@@ -90,7 +90,7 @@ if is_torch_available():
             labels: List[str],
             model_type: str,
             max_seq_length: Optional[int] = None,
-            overwrite_cache=False,
+            overwrite_cache=True,
             mode: Split = Split.train,
         ):
             # Load data features from cache or dataset file

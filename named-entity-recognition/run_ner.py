@@ -97,7 +97,7 @@ class DataTrainingArguments:
         },
     )
     overwrite_cache: bool = field(
-        default=False,
+        default=True,
         metadata={"help": "Overwrite the cached training and evaluation sets"}
     )
 
@@ -117,6 +117,10 @@ class MyTrainingArguments(TrainingArguments):
     num_train_epochs: int = field(
         default=3,
         metadata={"help": "training epochs"},
+    )
+    local_rank: int = field(
+        default=-1,
+        metadata={"help": "-1: single GPU, other: distributed"},
     )
     per_device_train_batch_size: int = field(
         default=32,
