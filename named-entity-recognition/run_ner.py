@@ -104,14 +104,14 @@ class DataTrainingArguments:
                     "than this will be truncated, sequences shorter will be padded."
         },
     )
-    num_train_epochs: int = field(
-        default=3,
-        metadata={"help": "training epochs"},
-    )
-    per_device_train_batch_size: int = field(
-        default=32,
-        metadata={"help": "per_device_train_batch_size"},
-    )
+    # num_train_epochs: int = field(
+    #     default=3,
+    #     metadata={"help": "training epochs"},
+    # )
+    # per_device_train_batch_size: int = field(
+    #     default=32,
+    #     metadata={"help": "per_device_train_batch_size"},
+    # )
     seed: int = field(
         default=42,
         metadata={"help": "seed"},
