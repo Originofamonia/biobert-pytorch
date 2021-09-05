@@ -77,15 +77,15 @@ class DataTrainingArguments:
     """
     Arguments pertaining to what data we are going to input our model for training and eval.
     """
-    _data_dir = '../datasets/NER'
+    abs_data_dir = '/home/qiyuan/2021fall/biobert-pytorch/datasets/NER'
     entity = 'NCBI-disease'
     data_dir: str = field(
-        default=f'{_data_dir}/{entity}',
+        default=f'{abs_data_dir}/{entity}',
         metadata={
             "help": "The input data dir. Should contain the .txt files for a CoNLL-2003-formatted task."}
     )
     labels: Optional[str] = field(
-        default=f'{_data_dir}/{entity}/labels.txt',
+        default=f'{abs_data_dir}/{entity}/labels.txt',
         metadata={
             "help": "Path to a file containing all labels. If not specified, CoNLL-2003 labels are used."},
     )
