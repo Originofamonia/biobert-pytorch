@@ -112,10 +112,10 @@ class DataTrainingArguments:
     #     default=32,
     #     metadata={"help": "per_device_train_batch_size"},
     # )
-    seed: int = field(
-        default=42,
-        metadata={"help": "seed"},
-    )
+    # seed: int = field(
+    #     default=42,
+    #     metadata={"help": "seed"},
+    # )
     # save_steps: int = field(
     #     default=1000,
     #     metadata={"help": "save_steps"},
