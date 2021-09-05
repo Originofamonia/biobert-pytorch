@@ -116,10 +116,10 @@ class DataTrainingArguments:
         default=42,
         metadata={"help": "seed"},
     )
-    save_steps: int = field(
-        default=1000,
-        metadata={"help": "save_steps"},
-    )
+    # save_steps: int = field(
+    #     default=1000,
+    #     metadata={"help": "save_steps"},
+    # )
     overwrite_cache: bool = field(
         default=False,
         metadata={"help": "Overwrite the cached training and evaluation sets"}
