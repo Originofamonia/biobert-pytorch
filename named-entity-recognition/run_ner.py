@@ -89,10 +89,10 @@ class DataTrainingArguments:
         metadata={
             "help": "Path to a file containing all labels. If not specified, CoNLL-2003 labels are used."},
     )
-    output_dir: str = field(
-        default=f'../output/{entity}',
-        metadata={"help": "Path to outputs"}
-    )
+    # output_dir: str = field(
+    #     default=f'../output/{entity}',
+    #     metadata={"help": "Path to outputs"}
+    # )
     overwrite_output_dir: bool = field(
         default=True,
         metadata={"help": "Overwrite the output"}
