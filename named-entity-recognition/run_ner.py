@@ -93,10 +93,10 @@ class DataTrainingArguments:
     #     default=f'../output/{entity}',
     #     metadata={"help": "Path to outputs"}
     # )
-    overwrite_output_dir: bool = field(
-        default=True,
-        metadata={"help": "Overwrite the output"}
-    )
+    # overwrite_output_dir: bool = field(
+    #     default=True,
+    #     metadata={"help": "Overwrite the output"}
+    # )
     max_seq_length: int = field(
         default=128,
         metadata={
