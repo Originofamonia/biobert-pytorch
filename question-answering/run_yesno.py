@@ -423,21 +423,18 @@ def main():
         "--model_type",
         default='bert',
         type=str,
-        required=True,
         help="Model type selected in the list: ",
     )
     parser.add_argument(
         "--model_name_or_path",
         default='dmis-lab/biobert-base-cased-v1.1',
         type=str,
-        required=True,
         help="Path to pre-trained model",
     )
     parser.add_argument(
         "--output_dir",
         default='output',
         type=str,
-        required=True,
         help="The output directory where the model checkpoints will be written."
     )
     parser.add_argument(
@@ -518,10 +515,7 @@ def main():
         help="Overwrite the cached training and evaluation sets",
     )
     parser.add_argument(
-        "--seed",
-        default=444,
-        type=int,
-        help="Random seed"
+        "--seed", default=444, type=int, help="Random seed"
     )
 
     parser.add_argument("--per_gpu_train_batch_size", default=12, type=int,
