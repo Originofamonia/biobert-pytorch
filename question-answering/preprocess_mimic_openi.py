@@ -100,7 +100,7 @@ def add_findings_to_mimic():
 def make_openi_df():
     openi_filename = '/home/qiyuan/2021fall/biobert-pytorch/datasets/indiana_reports.csv'
     common_labels = ['cardiomegaly', 'edema', 'pneumothorax',
-                     'normal', 'consolidation', 'pneumonia', 'fracture',
+                     'no finding', 'consolidation', 'pneumonia', 'fracture',
                      'pleural effusion', 'atelectasis']
     new_columns = ['cardiomegaly', 'edema', 'pneumothorax',
                    'no finding', 'consolidation', 'pneumonia', 'fracture',
