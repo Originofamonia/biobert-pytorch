@@ -97,7 +97,11 @@ def make_openi_df():
     common_labels = ['cardiomegaly', 'edema', 'pneumothorax',
                      'normal', 'consolidation', 'pneumonia', 'fracture',
                      'pleural effusion', 'atelectasis']
+    new_columns = ['cardiomegaly', 'edema', 'pneumothorax',
+                     'normal', 'consolidation', 'pneumonia', 'fracture',
+                     'pleural effusion', 'atelectasis', 'findings']
     df = pd.read_csv(openi_filename)
+    df2 = pd.DataFrame(columns=new_columns)
     for index, row in df.iterrows():
         mesh = row['MeSH']
         finding = row['findings']
@@ -107,13 +111,13 @@ def make_openi_df():
             if any(mimic_disease in item.lower() for mimic_disease in
                    common_labels):
                 item_labels.append(item.split('/')[0])
-        row_dict = {'finding': finding}
+        row_dict = {'findings': finding}
         for label in common_labels:
             if label in item_labels:
                 row_dict[label] = 1
             else:
                 row_dict[label] = 0
-
+        df2 = df2.append(row_dict)
 
 if __name__ == '__main__':
     # filter_labels()
