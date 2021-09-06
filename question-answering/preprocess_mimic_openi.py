@@ -86,8 +86,10 @@ def add_findings_to_mimic():
                 if 'IMPRESSION' in line:
                     end_index = i
             findings = [line.strip('\n') for line in lines[start_index: end_index]]
-            finding = ' '.join(findings)
-            print(finding)
+            finding = ''.join(findings).strip()
+            df.loc[index, 'findings'] = finding
+
+    df.to_csv('mimic_w_findings.csv', index=False)
 
 def make_openi_df():
     openi_filename = '../datasets/indiana_reports.csv'
