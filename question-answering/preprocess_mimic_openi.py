@@ -80,10 +80,14 @@ def add_findings_to_mimic():
         report_path = f'/home/qiyuan/2021fall/biobert-pytorch/datasets/mimic_files/p{subject_id}/s{study_id}.txt'
         with open(report_path) as f:
             lines = f.readlines()
-            findings = []
-            for line in lines:
-                pass
-
+            for i, line in enumerate(lines):
+                if 'FINDINGS' in line:
+                    start_index = i + 1
+                if 'IMPRESSION' in line:
+                    end_index = i
+            findings = [line.strip('\n') for line in lines[start_index: end_index]]
+            finding = ' '.join(findings)
+            print(finding)
 
 def make_openi_df():
     openi_filename = '../datasets/indiana_reports.csv'
