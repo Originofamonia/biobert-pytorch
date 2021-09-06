@@ -150,7 +150,7 @@ def change_disease_name(split_item):
 
 
 if __name__ == '__main__':
-    filter_labels()
+    # filter_labels()
     # make_mimic_df()
     # add_findings_to_mimic()
-    # make_openi_df()
+    make_openi_df()
