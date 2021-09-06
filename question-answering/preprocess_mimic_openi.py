@@ -117,7 +117,8 @@ def make_openi_df():
                 row_dict[label] = 1
             else:
                 row_dict[label] = 0
-        df2 = df2.append(row_dict)
+        df2 = df2.append(row_dict, ignore_index=True)
+
 
 if __name__ == '__main__':
     # filter_labels()
