@@ -73,7 +73,7 @@ def make_mimic_df():
 
 
 def add_findings_to_mimic():
-    df = pd.read_csv('filtered_mimic.csv')
+    df = pd.read_csv('question-answering/filtered_mimic.csv')
     for index, row in df.iterrows():
         subject_id = row['subject_id']
         study_id = row['study_id']
