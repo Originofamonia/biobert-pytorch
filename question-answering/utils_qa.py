@@ -1,4 +1,4 @@
-import json,time
+import json, time
 import numpy as np
 import pandas as pd
 import os
@@ -16,9 +16,9 @@ import pdb
 
 logger = logging.getLogger(__name__)
 
+
 def transform_n2b_yesno(nbest_path, output_path):
-    
-    ### Setting basic strings 
+    ### Setting basic strings
 
     #### Checking nbest_BioASQ-test prediction.json
     if not os.path.exists(nbest_path):
@@ -27,55 +27,59 @@ def transform_n2b_yesno(nbest_path, output_path):
 
     #### Reading Pred File
     with open(nbest_path, "r") as reader:
-        test=json.load(reader)
+        test = json.load(reader)
 
-    qidDict=dict()
-    if True: # multi output
+    qidDict = dict()
+    if True:  # multi output
         for multiQid in test:
-            assert len(multiQid)==(24+4) # all multiQid should have length of 24 + 3
+            assert len(multiQid) == (
+                        24 + 4)  # all multiQid should have length of 24 + 3
             if not multiQid[:-4] in qidDict:
-                qidDict[multiQid[:-4]]=[test[multiQid]]
-            else :
+                qidDict[multiQid[:-4]] = [test[multiQid]]
+            else:
                 qidDict[multiQid[:-4]].append(test[multiQid])
-    else: # single output
-        qidDict={qid:[test[qid]] for qid in test}    
+    else:  # single output
+        qidDict = {qid: [test[qid]] for qid in test}
 
-    entryList=[]
+    entryList = []
     print(len(qidDict), 'number of questions')
     for qid in qidDict:
         yesno_prob = {'yes': [], 'no': []}
         yesno_cnt = 0
         for ans, prob in qidDict[qid]:
-            yesno_prob['yes'] += [float('{:.3f}'.format(prob[0]))] # For sigmoid
+            yesno_prob['yes'] += [
+                float('{:.3f}'.format(prob[0]))]  # For sigmoid
             yesno_cnt += 1
-        
-        mean = lambda x: sum(x)/len(x)
+
+        mean = lambda x: sum(x) / len(x)
         final_answer = 'yes' if mean(yesno_prob['yes']) > 0.5 else 'no'
 
-        entry={u"type": "yesno",
-        u"id": qid,
-        u"ideal_answer": ["Dummy"],
-        u"exact_answer": final_answer,
-        }
+        entry = {u"type": "yesno",
+                 u"id": qid,
+                 u"ideal_answer": ["Dummy"],
+                 u"exact_answer": final_answer,
+                 }
         entryList.append(entry)
-    finalformat={u'questions':entryList}
+    finalformat = {u'questions': entryList}
 
     if os.path.isdir(output_path):
-        outfilepath=os.path.join(output_path, "BioASQform_BioASQ-answer.json") # For unified output name
+        outfilepath = os.path.join(output_path,
+                                   "BioASQform_BioASQ-answer.json")  # For unified output name
     else:
-        outfilepath=output_path
+        outfilepath = output_path
 
     with open(outfilepath, "w") as outfile:
         json.dump(finalformat, outfile, indent=2)
         print("outfilepath={}".format(outfilepath))
 
+
 def textrip(text):
-    if text=="":
+    if text == "":
         return text
-    if text[-1]==',' or text[-1]=='.' or text[-1]==' ':
+    if text[-1] == ',' or text[-1] == '.' or text[-1] == ' ':
         return text[:-1]
-    if len(text)>2 and text[0]=='(' and text[-1]==')':
-        if text.count('(')==1 and text.count(')')==1:
+    if len(text) > 2 and text[0] == '(' and text[-1] == ')':
+        if text.count('(') == 1 and text.count(')') == 1:
             return text[1:-1]
     if ('(' in text) and (')' not in text):
         return ""
@@ -83,8 +87,8 @@ def textrip(text):
         return ""
     return text
 
+
 def transform_n2b_factoid(nbest_path, output_path):
-    
     #### Checking nbest_BioASQ-test prediction.json
     if not os.path.exists(nbest_path):
         print("No file exists!\n#### Fatal Error : Abort!")
@@ -92,72 +96,77 @@ def transform_n2b_factoid(nbest_path, output_path):
 
     #### Reading Pred File
     with open(nbest_path, "r") as reader:
-        test=json.load(reader)
+        test = json.load(reader)
 
-    qidDict=dict()
+    qidDict = dict()
     if True:
         for multiQid in test:
-            assert len(multiQid)==(24+4) # all multiQid should have length of 24 + 3
+            assert len(multiQid) == (
+                        24 + 4)  # all multiQid should have length of 24 + 3
             if not multiQid[:-4] in qidDict:
-                qidDict[multiQid[:-4]]=[test[multiQid]]
-            else :
+                qidDict[multiQid[:-4]] = [test[multiQid]]
+            else:
                 qidDict[multiQid[:-4]].append(test[multiQid])
-    else: # single output
-        qidDict={qid:[test[qid]] for qid in test}    
+    else:  # single output
+        qidDict = {qid: [test[qid]] for qid in test}
 
-    entryList=[]
-    entryListWithProb=[]
+    entryList = []
+    entryListWithProb = []
     for qid in qidDict:
 
-        jsonList=[]
-        for jsonele in qidDict[qid]: # value of qidDict is a list
-            jsonList+=jsonele
+        jsonList = []
+        for jsonele in qidDict[qid]:  # value of qidDict is a list
+            jsonList += jsonele
 
-        qidDf=pd.DataFrame().from_dict(jsonList)
-                
-        sortedDf=qidDf.sort_values(by='probability', axis=0, ascending=False)
+        qidDf = pd.DataFrame().from_dict(jsonList)
 
-        sortedSumDict=OrderedDict()
-        sortedSumDictKeyDict=dict() # key : noramlized key
-            
+        sortedDf = qidDf.sort_values(by='probability', axis=0, ascending=False)
+
+        sortedSumDict = OrderedDict()
+        sortedSumDictKeyDict = dict()  # key : noramlized key
+
         for index in sortedDf.index:
-            text=sortedDf.loc[index]["text"]
-            text=textrip(text)
-            if text=="":
+            text = sortedDf.loc[index]["text"]
+            text = textrip(text)
+            if text == "":
                 pass
-            elif len(text)>100:
-                    pass
+            elif len(text) > 100:
+                pass
             elif text.lower() in sortedSumDictKeyDict:
-                sortedSumDict[sortedSumDictKeyDict[text.lower()]] += sortedDf.loc[index]["probability"]
+                sortedSumDict[sortedSumDictKeyDict[text.lower()]] += \
+                sortedDf.loc[index]["probability"]
             else:
-                sortedSumDictKeyDict[text.lower()]=text
-                sortedSumDict[sortedSumDictKeyDict[text.lower()]] = sortedDf.loc[index]["probability"]        
-        finalSorted=sorted(sortedSumDict.items(), key=operator.itemgetter(1), reverse=True) # for python 2, use sortedSumDict.iteritems() instead of sortedSumDict.items()
-        
-        entry={u"type":"factoid", 
-        #u"body":qas, 
-        u"id":qid, # must be 24 char
-        u"ideal_answer":["Dummy"],
-        u"exact_answer":[[ans[0]] for ans in finalSorted[:5]],
-        # I think enough?
-        }
+                sortedSumDictKeyDict[text.lower()] = text
+                sortedSumDict[sortedSumDictKeyDict[text.lower()]] = \
+                sortedDf.loc[index]["probability"]
+        finalSorted = sorted(sortedSumDict.items(), key=operator.itemgetter(1),
+                             reverse=True)  # for python 2, use sortedSumDict.iteritems() instead of sortedSumDict.items()
+
+        entry = {u"type": "factoid",
+                 # u"body":qas,
+                 u"id": qid,  # must be 24 char
+                 u"ideal_answer": ["Dummy"],
+                 u"exact_answer": [[ans[0]] for ans in finalSorted[:5]],
+                 # I think enough?
+                 }
         entryList.append(entry)
-        
-        entryWithProb={u"type":"factoid", 
-        u"id":qid, # must be 24 char
-        u"ideal_answer":["Dummy"],
-        u"exact_answer":[ans for ans in finalSorted[:20]],
-        }
+
+        entryWithProb = {u"type": "factoid",
+                         u"id": qid,  # must be 24 char
+                         u"ideal_answer": ["Dummy"],
+                         u"exact_answer": [ans for ans in finalSorted[:20]],
+                         }
         entryListWithProb.append(entryWithProb)
-    finalformat={u'questions':entryList}
-    finalformatWithProb={u'questions':entryListWithProb}
+    finalformat = {u'questions': entryList}
+    finalformatWithProb = {u'questions': entryListWithProb}
 
     if os.path.isdir(output_path):
-        outfilepath=os.path.join(output_path, "BioASQform_BioASQ-answer.json")
-        outWithProbfilepath=os.path.join(output_path, "WithProb_BioASQform_BioASQ-answer.json")
+        outfilepath = os.path.join(output_path, "BioASQform_BioASQ-answer.json")
+        outWithProbfilepath = os.path.join(output_path,
+                                           "WithProb_BioASQform_BioASQ-answer.json")
     else:
-        outfilepath=output_path
-        outWithProbfilepath= output_path+"_WithProb"
+        outfilepath = output_path
+        outWithProbfilepath = output_path + "_WithProb"
 
     with open(outfilepath, "w") as outfile:
         json.dump(finalformat, outfile, indent=2)
@@ -173,7 +182,7 @@ def eval_bioasq_standard(task_num, outfile, golden, cwd):
         '3': 3, '4': 3,
         '5': 5, '6': 5, '7': 5, '8': 5
     }
-    
+
     golden = os.path.join(os.getcwd(), golden)
     outfile = os.path.join(os.getcwd(), outfile)
 
@@ -188,14 +197,15 @@ def eval_bioasq_standard(task_num, outfile, golden, cwd):
         stdout=subprocess.PIPE
     )
     stdout1, _ = evalproc1.communicate()
-    
+
     result = [float(v) for v in stdout1.decode('utf-8').split(' ')]
-    
+
     return result
+
 
 def read_squad_examples(input_file, is_training):
     """Read a SQuAD json file into a list of SquadExample."""
-    is_bioasq=True # for BioASQ
+    is_bioasq = True  # for BioASQ
 
     with open(input_file, "r") as reader:
         input_data = json.load(reader)["data"]
@@ -213,7 +223,7 @@ def read_squad_examples(input_file, is_training):
             char_to_word_offset = []
             prev_is_whitespace = True
             if is_bioasq:
-                paragraph_text.replace('/',' ')  # need review
+                paragraph_text.replace('/', ' ')  # need review
             for c in paragraph_text:
                 if is_whitespace(c):
                     prev_is_whitespace = True
@@ -231,7 +241,8 @@ def read_squad_examples(input_file, is_training):
                 answer = None
                 is_impossible = False
                 if is_training:
-                    assert (qa["is_impossible"] == True) != (qa["answers"] == "yes")
+                    assert (qa["is_impossible"] == True) != (
+                                qa["answers"] == "yes")
                     assert qa["answers"] in ["yes", "no"]
                     # answer = 1 if qa["answers"] == 'yes' else 0
                     is_impossible = qa["is_impossible"]
@@ -250,9 +261,11 @@ def read_squad_examples(input_file, is_training):
 
     # target_cnt = 500
     if is_training:
-        pos_cnt = sum([1 for example in examples if example.is_impossible == False])
-        neg_cnt = sum([1 for example in examples if example.is_impossible == True])
-        target_cnt = min(pos_cnt,neg_cnt)
+        pos_cnt = sum(
+            [1 for example in examples if example.is_impossible == False])
+        neg_cnt = sum(
+            [1 for example in examples if example.is_impossible == True])
+        target_cnt = min(pos_cnt, neg_cnt)
         print()
         print('Imbalance btw {} vs {}'.format(pos_cnt, neg_cnt))
         random.shuffle(examples)
@@ -270,8 +283,10 @@ def read_squad_examples(input_file, is_training):
                 new_pos_cnt += (1 if example.is_impossible == False else 0)
                 new_neg_cnt += (1 if example.is_impossible == True else 0)
 
-        pos_cnt = sum([1 for example in new_examples if example.is_impossible == False])
-        neg_cnt = sum([1 for example in new_examples if example.is_impossible == True])
+        pos_cnt = sum(
+            [1 for example in new_examples if example.is_impossible == False])
+        neg_cnt = sum(
+            [1 for example in new_examples if example.is_impossible == True])
         random.shuffle(new_examples)
         print('Balanced as {} vs {}'.format(pos_cnt, neg_cnt))
         print('Sample: {}'.format(new_examples[0]))
@@ -279,10 +294,12 @@ def read_squad_examples(input_file, is_training):
     else:
         return examples
 
-def write_predictions(all_examples, all_features, all_results, output_prediction_file):
+
+def write_predictions(all_examples, all_features, all_results,
+                      output_prediction_file):
     """Write final predictions to the json file and log-odds of null if needed."""
     logger.info("Writing predictions to: %s" % (output_prediction_file))
-    
+
     example_index_to_features = collections.defaultdict(list)
     for feature in all_features:
         example_index_to_features[feature.example_index].append(feature)
@@ -325,7 +342,6 @@ def write_predictions(all_examples, all_features, all_results, output_prediction
         writer.write(json.dumps(all_predictions, indent=4) + "\n")
 
 
-
 if __name__ == '__main__':
     import argparse
 
@@ -359,7 +375,6 @@ if __name__ == '__main__':
 
     transform_n2b_factoid(args.nbest_path, args.output_dir)
 
-
     """ Evaluation - Measure
     pred_file = os.path.join(args.output_dir, "BioASQform_BioASQ-answer.json")
 
@@ -368,4 +383,3 @@ if __name__ == '__main__':
                         args.golden_file,
                         args.official_eval_dir)
     """
-
