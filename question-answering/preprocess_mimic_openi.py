@@ -77,7 +77,7 @@ def add_findings_to_mimic():
     for index, row in df.iterrows():
         subject_id = row['subject_id']
         study_id = row['study_id']
-        report_path = os.path.join('../datasets/mimic-cxr-', subject_id, study_id)
+        report_path = f'/home/qiyuan/2021fall/biobert-pytorch/datasets/mimic_files/p{subject_id}/s{study_id}.txt'
         with open(report_path) as f:
             lines = f.readlines()
             findings = []
