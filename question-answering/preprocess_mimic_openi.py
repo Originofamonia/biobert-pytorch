@@ -117,7 +117,8 @@ def make_openi_df():
         for item in items:
             if any(mimic_disease in item.lower() for mimic_disease in
                    common_labels):
-                item_labels.append(item.split('/')[0])
+                split_item = item.lower().split('/')[0]
+                item_labels.append(split_item)
         row_dict = {'findings': finding}
         for label in common_labels:
             if label in item_labels:
