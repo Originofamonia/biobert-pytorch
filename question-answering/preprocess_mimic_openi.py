@@ -5,13 +5,15 @@ import math
 
 
 def filter_labels():
-    mimic_filename = '../datasets/mimic-cxr-2.0.0-negbio.csv'
-    openi_filename = '../datasets/indiana_reports.csv'
+    abs_current_path = os.path.realpath('./')
+    print(abs_current_path)
+    mimic_filename = 'datasets/mimic-cxr-2.0.0-negbio.csv'
+    openi_filename = 'datasets/indiana_reports.csv'
     mimic_df = pd.read_csv(mimic_filename)
     mimic_labels = mimic_df.columns.values[2:].tolist()
     mimic_labels = [mimic_disease.lower() for mimic_disease in mimic_labels]
-    mimic_labels.append('normal')
-    mimic_labels.remove('no finding')
+    # mimic_labels.append('normal')
+    # mimic_labels.remove('no finding')
     print(mimic_labels)
 
     openi_df = pd.read_csv(openi_filename)
@@ -25,7 +27,7 @@ def filter_labels():
                 openi_labels.append(item.split('/')[0])
 
     openi_labels = set(openi_labels)
-    openi_labels = [openi_disease.lower() for openi_disease in openi_labels]
+    # openi_labels = [openi_disease.lower() for openi_disease in openi_labels]
     print(openi_labels)
 
     common_labels = ['cardiomegaly', 'edema', 'pneumothorax',
@@ -74,7 +76,8 @@ def make_mimic_df():
 
 
 def add_findings_to_mimic():
-    df = pd.read_csv('/home/qiyuan/2021fall/biobert-pytorch/question-answering/filtered_mimic.csv')
+    df = pd.read_csv(
+        '/home/qiyuan/2021fall/biobert-pytorch/question-answering/filtered_mimic.csv')
     for index, row in df.iterrows():
         subject_id = row['subject_id']
         study_id = row['study_id']
@@ -86,7 +89,8 @@ def add_findings_to_mimic():
                     start_index = i + 1
                 if 'IMPRESSION' in line:
                     end_index = i
-            findings = [line.strip('\n') for line in lines[start_index: end_index]]
+            findings = [line.strip('\n') for line in
+                        lines[start_index: end_index]]
             finding = ''.join(findings).strip()
             df.loc[index, 'findings'] = finding
 
@@ -99,8 +103,8 @@ def make_openi_df():
                      'normal', 'consolidation', 'pneumonia', 'fracture',
                      'pleural effusion', 'atelectasis']
     new_columns = ['cardiomegaly', 'edema', 'pneumothorax',
-                     'normal', 'consolidation', 'pneumonia', 'fracture',
-                     'pleural effusion', 'atelectasis', 'findings']
+                   'normal', 'consolidation', 'pneumonia', 'fracture',
+                   'pleural effusion', 'atelectasis', 'findings']
     df = pd.read_csv(openi_filename)
     df2 = pd.DataFrame(columns=new_columns)
     for index, row in df.iterrows():
