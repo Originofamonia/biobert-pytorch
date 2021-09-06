@@ -27,7 +27,7 @@ def filter_labels():
                 openi_labels.append(item.split('/')[0])
 
     openi_labels = set(openi_labels)
-    # openi_labels = [openi_disease.lower() for openi_disease in openi_labels]
+    openi_labels = [openi_disease.lower() for openi_disease in openi_labels]
     print(openi_labels)
 
     common_labels = ['cardiomegaly', 'edema', 'pneumothorax',
@@ -103,7 +103,7 @@ def make_openi_df():
                      'normal', 'consolidation', 'pneumonia', 'fracture',
                      'pleural effusion', 'atelectasis']
     new_columns = ['cardiomegaly', 'edema', 'pneumothorax',
-                   'normal', 'consolidation', 'pneumonia', 'fracture',
+                   'no finding', 'consolidation', 'pneumonia', 'fracture',
                    'pleural effusion', 'atelectasis', 'findings']
     df = pd.read_csv(openi_filename)
     df2 = pd.DataFrame(columns=new_columns)
@@ -118,6 +118,7 @@ def make_openi_df():
             if any(mimic_disease in item.lower() for mimic_disease in
                    common_labels):
                 split_item = item.lower().split('/')[0]
+                split_item = change_disease_name(split_item)
                 item_labels.append(split_item)
         row_dict = {'findings': finding}
         for label in common_labels:
@@ -125,15 +126,31 @@ def make_openi_df():
                 row_dict[label] = 1
             else:
                 row_dict[label] = 0
-        # if 1 not in row_dict.values():
-        #     continue
+        if 1 not in row_dict.values():
+            continue
         df2 = df2.append(row_dict, ignore_index=True)
     df2.to_csv('filtered_openi.csv', index=False)
     print(df2.head())
 
 
+def change_disease_name(split_item):
+    if split_item == 'fractures, bone':
+        split_item = 'fracture'
+    elif split_item == 'pulmonary atelectasis':
+        split_item = 'atelectasis'
+    elif split_item == 'hydropneumothorax':
+        split_item = 'pneumothorax'
+    elif split_item == 'pulmonary edema':
+        split_item = 'edema'
+    elif split_item == 'hemopneumothorax':
+        split_item = 'pneumothorax'
+    elif split_item == 'normal':
+        split_item = 'no finding'
+    return split_item
+
+
 if __name__ == '__main__':
-    # filter_labels()
+    filter_labels()
     # make_mimic_df()
     # add_findings_to_mimic()
-    make_openi_df()
+    # make_openi_df()
