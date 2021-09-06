@@ -1,6 +1,7 @@
 import pandas as pd
 import csv
 import os
+import math
 
 
 def filter_labels():
@@ -104,8 +105,8 @@ def make_openi_df():
     df2 = pd.DataFrame(columns=new_columns)
     for index, row in df.iterrows():
         mesh = row['MeSH']
-        finding = row['findings'].strip()
-        if len(finding) < 1:
+        finding = row['findings']
+        if math.isnan(finding):
             continue
         item_labels = []
         items = mesh.split(';')
