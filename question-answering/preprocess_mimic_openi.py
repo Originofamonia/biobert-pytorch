@@ -106,7 +106,7 @@ def make_openi_df():
     for index, row in df.iterrows():
         mesh = row['MeSH']
         finding = row['findings']
-        if math.isnan(finding):
+        if not isinstance(finding, str):
             continue
         item_labels = []
         items = mesh.split(';')
