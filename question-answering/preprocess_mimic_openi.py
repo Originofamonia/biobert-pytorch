@@ -119,6 +119,7 @@ def make_openi_df():
                 row_dict[label] = 0
         df2 = df2.append(row_dict, ignore_index=True)
     df2.to_csv('filtered_openi.csv', index=False)
+    print(df2.head())
 
 
 if __name__ == '__main__':
