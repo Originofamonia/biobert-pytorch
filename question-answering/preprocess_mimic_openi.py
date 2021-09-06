@@ -91,8 +91,9 @@ def add_findings_to_mimic():
 
     df.to_csv('mimic_w_findings.csv', index=False)
 
+
 def make_openi_df():
-    openi_filename = '../datasets/indiana_reports.csv'
+    openi_filename = '/home/qiyuan/2021fall/biobert-pytorch/datasets/indiana_reports.csv'
     common_labels = ['cardiomegaly', 'edema', 'pneumothorax',
                      'normal', 'consolidation', 'pneumonia', 'fracture',
                      'pleural effusion', 'atelectasis']
@@ -117,4 +118,5 @@ def make_openi_df():
 if __name__ == '__main__':
     # filter_labels()
     # make_mimic_df()
-    add_findings_to_mimic()
+    # add_findings_to_mimic()
+    make_openi_df()
